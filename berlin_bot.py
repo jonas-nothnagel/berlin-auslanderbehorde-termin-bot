@@ -19,7 +19,7 @@ logging.basicConfig(
 class WebDriver:
     def __init__(self):
         self._driver: webdriver.Chrome
-        self._implicit_wait_time = 20
+        self._implicit_wait_time = 15
 
     def __enter__(self) -> webdriver.Chrome:
         logging.info("Open browser")
@@ -29,7 +29,7 @@ class WebDriver:
         self._driver = webdriver.Chrome(options=options)
         self._driver.implicitly_wait(self._implicit_wait_time) # seconds
         self._driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        self._driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.53 Safari/537.36'})
+        self._driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.5563.41 Safari/537.36'})
         return self._driver
 
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -38,7 +38,7 @@ class WebDriver:
 
 class BerlinBot:
     def __init__(self):
-        self.wait_time = 20
+        self.wait_time = 25
         self._sound_file = os.path.join(os.getcwd(), "alarm.wav")
         self._error_message = """Für die gewählte Dienstleistung sind aktuell keine Termine frei! Bitte"""
 
@@ -53,16 +53,18 @@ class BerlinBot:
     def tick_off_some_bullshit(driver: webdriver.Chrome):
         logging.info("Ticking off agreement")
         driver.find_element(By.XPATH, '//*[@id="xi-div-1"]/div[4]/label[2]/p').click()
-        time.sleep(1)
+        time.sleep(2)
+
         driver.find_element(By.ID, 'applicationForm:managedForm:proceed').click()
-        time.sleep(5)
+        #time.sleep(5)
+        time.sleep(15)
 
     @staticmethod
     def enter_form(driver: webdriver.Chrome):
         logging.info("Fill out form")
-        # select china
+        # select Jordanien
         s = Select(driver.find_element(By.ID, 'xi-sel-400'))
-        s.select_by_visible_text("China")
+        s.select_by_visible_text("Jordanien")
         # eine person
         s = Select(driver.find_element(By.ID, 'xi-sel-422'))
         s.select_by_visible_text("eine Person")
@@ -75,23 +77,23 @@ class BerlinBot:
         driver.find_element(By.XPATH, '//*[@id="xi-div-30"]/div[2]/label/p').click()
         time.sleep(2)
 
-        # click on study group
-        driver.find_element(By.XPATH, '//*[@id="inner-479-0-2"]/div/div[1]/label/p').click()
+        # click on Erwerbstätigkeit
+        driver.find_element(By.XPATH, '//*[@id="inner-445-0-2"]/div/div[3]/label/p').click()
         time.sleep(2)
 
-        # b/c of stufy
-        driver.find_element(By.XPATH, '//*[@id="inner-479-0-2"]/div/div[2]/div/div[5]/label').click()
-        time.sleep(4)
-
+        # b/c of 18b
+        driver.find_element(By.XPATH, '//*[@id="inner-445-0-2"]/div/div[4]/div/div[1]').click()
+        time.sleep(6)
         # submit form
         driver.find_element(By.ID, 'applicationForm:managedForm:proceed').click()
-        time.sleep(10)
+        #time.sleep(10) 
+        time.sleep(25)
     
     def _success(self):
         logging.info("!!!SUCCESS - do not close the window!!!!")
         while True:
             self._play_sound_osx(self._sound_file)
-            time.sleep(15)
+            time.sleep(20)
         
         # todo play something and block the browser
 
@@ -112,7 +114,7 @@ class BerlinBot:
 
     def run_loop(self):
         # play sound to check if it works
-        self._play_sound_osx(self._sound_file)
+        # self._play_sound_osx(self._sound_file)
         while True:
             logging.info("One more round")
             self.run_once()
@@ -130,25 +132,32 @@ class BerlinBot:
         http://stackoverflow.com/a/34568298/901641
         I never would have tried using AppKit.NSSound without seeing his code.
         """
-        from AppKit import NSSound
-        from Foundation import NSURL
-        from time import sleep
+        # from AppKit import NSSound
+        # from Foundation import NSURL
+        # from time import sleep
 
-        logging.info("Play sound")
-        if "://" not in sound:
-            if not sound.startswith("/"):
-                from os import getcwd
+        # logging.info("Play sound")
+        # if "://" not in sound:
+        #     if not sound.startswith("/"):
+        #         from os import getcwd
 
-                sound = getcwd() + "/" + sound
-            sound = "file://" + sound
-        url = NSURL.URLWithString_(sound)
-        nssound = NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
-        if not nssound:
-            raise IOError("Unable to load sound named: " + sound)
-        nssound.play()
+        #         sound = getcwd() + "/" + sound
+        #     sound = "file://" + sound
+        
+        
+        # url = NSURL.URLWithString_(sound)
+        # nssound = NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
+        # if not nssound:
+        #     raise IOError("Unable to load sound named: " + sound)
+        # nssound.play()
 
-        if block:
-            sleep(nssound.duration())
+        # if block:
+        #     sleep(nssound.duration())
+
+        from playsound import playsound
+
+        sound = "alarm.wav"
+        playsound(sound)
 
 if __name__ == "__main__":
     BerlinBot().run_loop()
